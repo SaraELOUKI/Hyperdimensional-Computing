@@ -31,58 +31,48 @@ def test(MODEL, loader, criterion, device, model_='rff-hdc'):
 
 def train(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # criterion = torch.nn.NLLLoss()
     criterion = torch.nn.CrossEntropyLoss()
     channels = 3 if args.dataset == 'cifar' else 1
-    classes = 26 if args.dataset == 'isolet' else (6 if args.dataset == 'ucihar' else 10)
-    
-    # Initialize model with binary HDC or cyclic group model based on args
+    if args.dataset == 'isolet':
+        classes = 26
+    elif args.dataset == 'ucihar':
+        classes = 6
+    else:
+        classes = 10
     if 'hdc' in args.model:
         model = BModel(in_dim=channels * args.dim, classes=classes).to(device)
     else:
         model = GModel(args.gorder, in_dim=channels * args.dim, classes=classes).to(device)
-    
+
     trainloader, testloader = prepare_data(args)
-    
+    #     optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)#, momentum=0.9, weight_decay=1.0e-5)
+    #     optimizer = torch.optim.Adadelta(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+
     for epoch in range(args.epoch):
         print("Epoch:", epoch + 1)
         model.train()
         start_time = time.time()
-        
         for i, data in enumerate(trainloader, 0):
             inputs, labels = data[0].to(device), data[1].to(device)
-            
-            # Zero the gradients manually as we are not using an optimizer
-            model.zero_grad()
-            
-            # Forward pass
+            optimizer.zero_grad()
             if args.model == 'rff-hdc':
                 outputs = model(2 * inputs - 1)
             else:
                 outputs = model(inputs)
             loss = criterion(outputs, labels)
-            
-            # Compute gradients
             loss.backward()
-            
-            # Group-Based Bundling: Update weights using cyclic group bundling
-            with torch.no_grad():
-                for param in model.parameters():
-                    if param.grad is not None:
-                        # Applying group bundling
-                        param.copy_(self.group_bundle([param, param.grad]))
-            
-            # Calculate batch accuracy
+            optimizer.step()
             _, batch_predicted = torch.max(outputs.data, 1)
             batch_accu = 100.0 * (batch_predicted == labels).sum().item() / labels.size(0)
-            
-            # Print intermediate results every 50 batches
             if i % 50 == 49:
-                print(f"Batch {i+1}, Loss: {loss.item():.4f}, Accuracy: {batch_accu:.2f}%")
-        
-        # Testing after each epoch
+                print(i, "{0:.4f}".format(loss.item()), batch_accu)
         print('Start testing on test set')
         test(model, testloader, criterion, device, model_=args.model)
-        print(f"--- {time.time() - start_time:.2f} seconds ---")
+        print("--- %s seconds ---" % (time.time() - start_time))
+
+
 
 def argument_parser():
     parser = argparse.ArgumentParser(description='HDC Encoding and Training')
