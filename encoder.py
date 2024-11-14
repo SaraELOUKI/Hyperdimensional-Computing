@@ -175,4 +175,4 @@ class RandomFourierEncoder:
         return torch.floor(angles / (2.0 * np.pi) * self.gorder + 1 / 2)  # torch.fmod( , self.gorder)
 
     def similarity(self, x, y):
-       return torch.sum(torch.abs(self.pts_map(x) - self.pts_map(y)), dim=-1) / x.size(-1)
+       return return torch.sum(torch.abs(self.pts_map(x) - self.pts_map(y)), dim=-1) / x.size(-1)
