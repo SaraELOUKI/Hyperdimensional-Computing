@@ -174,14 +174,20 @@ class RandomFourierEncoder:
         angles = torch.fmod(raw_angles, 2 * np.pi)
         return torch.floor(angles / (2.0 * np.pi) * self.gorder + 1 / 2)  # torch.fmod( , self.gorder)
 
-    def similarity(self, x, y, r):
-        u = np.asarray(x)
-        v = np.asarray(y)
+    def compute_delta(ui, vi, r):
+        delta1 = np.mod(ui - vi, r)
+        delta2 = np.mod(vi - ui, r)
+        return min(delta1, delta2)
+
+    def vector_modular_distance(x, y, r):
+
+        u = np.asarray(u)
+        v = np.asarray(v)
+        
         if u.shape != v.shape:
-             raise ValueError(f"Vectors must have same shape. Got {u.shape} and {v.shape}")
-
-        delta1 = np.mod(u - v, r)  
-        delta2 = np.mod(v - u, r) 
-
-        min_deltas = np.minimum(delta1, delta2)
-        return float(np.sum(min_deltas))
+            raise ValueError(f"Vectors must have same shape. Got {u.shape} and {v.shape}")
+        
+        # Calculate Δᵢ for each component and sum
+        distance = sum(compute_delta(ui, vi, r) for ui, vi in zip(u, v))
+        
+        return float(distance)
