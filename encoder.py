@@ -174,12 +174,12 @@ class RandomFourierEncoder:
         angles = torch.fmod(raw_angles, 2 * np.pi)
         return torch.floor(angles / (2.0 * np.pi) * self.gorder + 1 / 2)  # torch.fmod( , self.gorder)
 
-    def compute_delta(ui, vi, r):
+    def compute_delta(self, ui, vi, r):
         delta1 = np.mod(ui - vi, r)
         delta2 = np.mod(vi - ui, r)
         return min(delta1, delta2)
 
-    def vector_modular_distance(x, y, r):
+    def vector_modular_distance(self, x, y, r):
 
         u = np.asarray(x)
         v = np.asarray(y)
