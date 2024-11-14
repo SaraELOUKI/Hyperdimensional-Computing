@@ -179,7 +179,7 @@ class RandomFourierEncoder:
         delta2 = np.mod(vi - ui, r)
         return min(delta1, delta2)
 
-    def similarity(self, x, y, r):
+    def manhattan(self, x, y, r):
         u = np.asarray(x)
         v = np.asarray(y)
     
