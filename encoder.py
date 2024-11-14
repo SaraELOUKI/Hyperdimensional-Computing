@@ -175,4 +175,13 @@ class RandomFourierEncoder:
         return torch.floor(angles / (2.0 * np.pi) * self.gorder + 1 / 2)  # torch.fmod( , self.gorder)
 
     def similarity(self, x, y):
-        return return torch.sum(torch.abs(self.pts_map(x) - self.pts_map(y)), dim=-1) / x.size(-1)
+        u = np.asarray(x)
+        v = np.asarray(y)
+        if u.shape != v.shape:
+             raise ValueError(f"Vectors must have same shape. Got {u.shape} and {v.shape}")
+
+        delta1 = np.mod(u - v, r)  
+        delta2 = np.mod(v - u, r) 
+
+        min_deltas = np.minimum(delta1, delta2)
+        return float(np.sum(min_deltas))
