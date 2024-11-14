@@ -179,15 +179,14 @@ class RandomFourierEncoder:
         delta2 = np.mod(vi - ui, r)
         return min(delta1, delta2)
 
-    def vector_modular_distance(self, x, y, r):
-
+    def similarity(self, x, y, r):
         u = np.asarray(x)
         v = np.asarray(y)
-        
+    
         if u.shape != v.shape:
-            raise ValueError(f"Vectors must have same shape. Got {u.shape} and {v.shape}")
+            raise ValueError(f"Vectors must have the same shape. Got {u.shape} and {v.shape}")
         
         # Calculate Δᵢ for each component and sum
-        distance = sum(compute_delta(ui, vi, r) for ui, vi in zip(u, v))
+        distance = sum(self.compute_delta(ui, vi, r) for ui, vi in zip(u, v))
         
         return float(distance)
