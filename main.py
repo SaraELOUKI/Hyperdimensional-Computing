@@ -29,10 +29,6 @@ def test(MODEL, loader, criterion, device, model_='rff-hdc'):
         100. * correct / len(loader.dataset)))
 
 
-def sgn(x):
-    """ Element-wise sign function for bundling operation. """
-    return torch.sign(x)  # +1 if positive, -1 if negative
-
 def train(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     criterion = torch.nn.CrossEntropyLoss()
@@ -68,12 +64,12 @@ def train(args):
             # Compute gradients
             loss.backward()
             
-            # Sign-Based Bundling: Update weights using sign of (weights + gradients)
+            # Group-Based Bundling: Update weights using cyclic group bundling
             with torch.no_grad():
                 for param in model.parameters():
                     if param.grad is not None:
-                        # Apply the sign-based bundling update
-                        param.copy_(sgn(param + param.grad))
+                        # Applying group bundling
+                        param.copy_(self.group_bundle([param, param.grad]))
             
             # Calculate batch accuracy
             _, batch_predicted = torch.max(outputs.data, 1)
