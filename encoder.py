@@ -181,8 +181,8 @@ class RandomFourierEncoder:
 
     def vector_modular_distance(x, y, r):
 
-        u = np.asarray(u)
-        v = np.asarray(v)
+        u = np.asarray(x)
+        v = np.asarray(y)
         
         if u.shape != v.shape:
             raise ValueError(f"Vectors must have same shape. Got {u.shape} and {v.shape}")
